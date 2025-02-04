@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles de la Película</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">👋 Bienvenido, {{ user.first_name|default:user.username }}!</a>
+            <div class="d-flex">
+                <a href="{% url 'crud' %}" class="btn btn-primary me-2">Inicio</a>
+                <a href="{% url 'logout' %}" class="btn btn-danger">Cerrar Sesión</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-5">
+    <h1 class="text-center mb-4">Detalles de la Película</h1>
+    <div class="card">
+        <div class="card-body">
+            <h3 class="card-title">{{ pelicula.nombre_pelicula }}</h3>
+            <p><strong>Director:</strong> {{ pelicula.director }}</p>
+            <p><strong>Fecha de Estreno:</strong> {{ pelicula.fecha_estreno }}</p>
+            <p><strong>Sinopsis:</strong> {{ pelicula.sinopsis }}</p>
+        </div>
+    </div>
+    <br>
+
+    <div class="border border-success p-2 mb-2">
+        {% if user != pelicula.author %}
+        <div class="mt-4">
+            <h4>Escribe un comentario</h4>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="d-flex align-items-center">
+                    <input class="form-control me-2" name="comentario" rows="3" required></input>
+                    <button type="submit" class="btn btn-primary">Agregar Comentario</button>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div class="alert alert-warning mt-4">
+            No puedes comentar en tu propia película.
+        </div>
+        {% endif %}
+
+        <h2 class="mt-5">Comentarios</h2>
+        <div class="list-group">
+            {% for comentario in comentarios %}
+                <div class="list-group-item">
+                    <strong>{{ comentario.autor.first_name }}</strong> - {{ comentario.fecha_comentario|date:"d M Y H:i" }}
+                    <p>{{ comentario.comentario }}</p>
+
+                    <!-- Mostrar el botón de borrar solo si el usuario es el autor del comentario -->
+                    {% if comentario.autor == user %}
+                    <form method="POST" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="comentario_id" value="{{ comentario.id }}">
+                        <button type="submit" name="delete_comentario" class="btn btn-danger btn-sm">Borrar Comentario</button>
+                    </form>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+ </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
