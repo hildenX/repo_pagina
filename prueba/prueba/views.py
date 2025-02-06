@@ -8,12 +8,10 @@ from django.contrib.auth.decorators import login_required
 
 from cine.models import Pelicula, Comentario
 from django.utils import timezone
-# Vista para CRUD
 def crud(request):
     peliculas = Pelicula.objects.all()  # Obtener todas las películas
     return render(request, 'crud.html', {'peliculas': peliculas})
 
-# Vista para la página principal (home)
 def home(request):
     form_registro = RegistroForm()
     form_login = LoginForm()
@@ -47,11 +45,9 @@ def home(request):
 
     return render(request, 'home.html', {'form_registro': form_registro, 'form_login': form_login})
 
-# Vista para cerrar sesión
 def custom_logout(request):
     logout(request)
     return redirect('home')  # Redirige a home.html después de cerrar sesión
-# Vista para ver detalles de la película
 @login_required
 def ver_pelicula(request, pelicula_id):
     pelicula = get_object_or_404(Pelicula, id=pelicula_id)
@@ -60,7 +56,6 @@ def ver_pelicula(request, pelicula_id):
 def editar_pelicula(request, pelicula_id):
     pelicula = get_object_or_404(Pelicula, id=pelicula_id)
 
-    # Verifica que el usuario sea el autor de la película
     if pelicula.author != request.user:
         return redirect('crud')  # Redirige si el usuario no es el autor
 
@@ -74,7 +69,6 @@ def editar_pelicula(request, pelicula_id):
 
     return render(request, 'editar_pelicula.html', {'pelicula': pelicula})
 
-# Vista para borrar una película
 @login_required
 def borrar_pelicula(request, pelicula_id):
     pelicula = get_object_or_404(Pelicula, id=pelicula_id)
@@ -90,17 +84,14 @@ def agregar_pelicula(request):
         fecha_estreno = request.POST.get('fecha_estreno')
         sinopsis = request.POST.get('sinopsis')
 
-        # Validación de longitud mínima de los campos
         if len(nombre_pelicula) < 3 or len(director) < 3 or len(sinopsis) < 3:
             mensaje_error = "Todos los campos deben tener al menos 3 caracteres."
             return render(request, 'agregar_pelicula.html', {'mensaje_error': mensaje_error})
 
-        # Validar si la película ya existe
         if Pelicula.objects.filter(nombre_pelicula=nombre_pelicula).exists():
             mensaje_error = "No se ha podido registrar la película porque ya existe una con el mismo nombre."
             return render(request, 'agregar_pelicula.html', {'mensaje_error': mensaje_error})
 
-        # Crear la película
         nueva_pelicula = Pelicula(
             nombre_pelicula=nombre_pelicula,
             director=director,
@@ -110,7 +101,6 @@ def agregar_pelicula(request):
         )
         nueva_pelicula.save()
         
-        # Redirigir a la página de CRUD donde se ven las películas
         return redirect('crud')
     
     return render(request, 'agregar_pelicula.html')
@@ -119,11 +109,9 @@ def agregar_pelicula(request):
 def ver_pelicula(request, pelicula_id):
     pelicula = Pelicula.objects.get(id=pelicula_id)
 
-    # Comprobar si el método es POST y si el comentario está presente
     if request.method == 'POST':
         comentario_texto = request.POST.get('comentario')
         
-        # Verificar si el comentario tiene al menos 3 caracteres
         if comentario_texto and len(comentario_texto) >= 3:  # Asegurarse de que no sea None
             comentario = Comentario(
                 pelicula=pelicula,
@@ -133,10 +121,8 @@ def ver_pelicula(request, pelicula_id):
             )
             comentario.save()
 
-    # Obtener los comentarios para la película
     comentarios = Comentario.objects.filter(pelicula=pelicula)
 
-    # Eliminar comentario si se solicita
     if 'delete_comentario' in request.POST:
         comentario_id = request.POST.get('comentario_id')
         comentario = get_object_or_404(Comentario, id=comentario_id)
